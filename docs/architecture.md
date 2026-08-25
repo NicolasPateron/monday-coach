@@ -3,6 +3,21 @@
 Everything here exists because something broke during one real marathon build. Nothing was
 designed up front.
 
+Every piece below traces back to a specific failure, in order of when it hurt:
+
+| What broke                                                        | What was added                                                    |
+| ----------------------------------------------------------------- | ----------------------------------------------------------------- |
+| The watch silently rejected exported workouts                     | The seven FIT fixes, and the regression tests `.fit` never had    |
+| Completed runs showed as not done                                 | Plan state merged over browser storage in the viewer              |
+| Sleep under-reported by up to four hours                          | Extraction rewritten from session events, plus a validation suite |
+| Resting heart rate frozen at a constant across 447 days           | The correct field, and cross-source reconciliation                |
+| Efficiency "improved" 20 s/km when autumn arrived                 | Temperature correction on every heart rate                        |
+| Rendering before marking completions wiped six weeks of progress  | One pipeline, one valid order, staleness guards                   |
+| Calendar and dashboard disagreed about the same session           | Calendar text generated from the plan, never typed                |
+| The watch archive was a week stale while every check showed green | Zip freshness verified, validated by injecting the fault          |
+| A fresh clone crashed with a Python traceback                     | `init.sh`, and errors that name the file and the fix              |
+| The skill rendered with the published build, bypassing every fix  | `npm link` required at install, and said twice                    |
+
 ---
 
 ## One command, one valid order
@@ -13,35 +28,35 @@ designed up front.
 ./harness/relancer.sh --plan 2   # after a plan change, for week 2
 ```
 
-| Step | Script | Why it sits here |
-|---|---|---|
-| 1 | `generate_plan.py` | Source of truth. Rewrites the plan from scratch — which erases completion state |
-| 2 | `meteo.py` | Fills the session temperature, **before** any heart-rate analysis |
-| 3 | `valider.py` | Blocks the chain on anomalous data |
-| 4 | `dashboard.py` | Cross-references plan, Strava, wellness and weight |
-| 5 | `marquer_realise.py` → viewer render | Completion marked **before** rendering, never after |
-| 6 | `gen-fit.ts` → `zip_fit.py` | `gen-fit.ts` writes `.fit` only — **never the zips** |
-| 7 | `rapport.py` | Produces the dashboard |
-| 8 | `verifier_sync.py` | Verifies every destination, exits 1 on drift |
+| Step | Script                               | Why it sits here                                                                |
+| ---- | ------------------------------------ | ------------------------------------------------------------------------------- |
+| 1    | `generate_plan.py`                   | Source of truth. Rewrites the plan from scratch — which erases completion state |
+| 2    | `meteo.py`                           | Fills the session temperature, **before** any heart-rate analysis               |
+| 3    | `valider.py`                         | Blocks the chain on anomalous data                                              |
+| 4    | `dashboard.py`                       | Cross-references plan, Strava, wellness and weight                              |
+| 5    | `marquer_realise.py` → viewer render | Completion marked **before** rendering, never after                             |
+| 6    | `gen-fit.ts` → `zip_fit.py`          | `gen-fit.ts` writes `.fit` only — **never the zips**                            |
+| 7    | `rapport.py`                         | Produces the dashboard                                                          |
+| 8    | `verifier_sync.py`                   | Verifies every destination, exits 1 on drift                                    |
 
 **The order is not stylistic.** Rendering the viewer before marking completions once dropped six
 weeks of visible progress to 0 %: `generate_plan.py` rewrites the plan and clears `completed`, so
-the viewer has to be rendered *after* Strava data is merged back in. `rapport.py` now refuses to
+the viewer has to be rendered _after_ Strava data is merged back in. `rapport.py` now refuses to
 run if the rendered viewer predates the plan.
 
 ---
 
 ## Seven destinations, never one alone
 
-| Destination | Written by |
-|---|---|
-| `harness/generate_plan.py` | **the source** — structural changes go here |
-| `build/plan.json` | `generate_plan.py` |
+| Destination                                    | Written by                                    |
+| ---------------------------------------------- | --------------------------------------------- |
+| `harness/generate_plan.py`                     | **the source** — structural changes go here   |
+| `build/plan.json`                              | `generate_plan.py`                            |
 | `build/programme.html` (claude-coach's viewer) | viewer render, **after** `marquer_realise.py` |
-| `dashboard.html` | `rapport.py` |
-| `garmin-fit/` **and both zips** | `gen-fit.ts` **then** `zip_fit.py` |
-| **Google Calendar** | payloads from `agenda.py`, pushed over MCP |
-| Scheduled task, memory, docs | by hand |
+| `dashboard.html`                               | `rapport.py`                                  |
+| `garmin-fit/` **and both zips**                | `gen-fit.ts` **then** `zip_fit.py`            |
+| **Google Calendar**                            | payloads from `agenda.py`, pushed over MCP    |
+| Scheduled task, memory, docs                   | by hand                                       |
 
 Changing a session's time in the calendar is a change of plan. It propagates everywhere, or it
 doesn't happen.
@@ -64,11 +79,11 @@ in the calendar at all.
 
 **Three axes held aligned, not one:**
 
-| Axis | Carried by | Verified by |
-|---|---|---|
-| Date and time | the plan, or the real date once the session is done | `agenda.py verifier` |
-| Completion | Strava via `marquer_realise.py` → ✅ and grey | `agenda.py verifier` |
-| Content | `humanReadable`, character for character | truncated SHA-256 fingerprint |
+| Axis          | Carried by                                          | Verified by                   |
+| ------------- | --------------------------------------------------- | ----------------------------- |
+| Date and time | the plan, or the real date once the session is done | `agenda.py verifier`          |
+| Completion    | Strava via `marquer_realise.py` → ✅ and grey       | `agenda.py verifier`          |
+| Content       | `humanReadable`, character for character            | truncated SHA-256 fingerprint |
 
 **A completed session carries its real date, time and duration**, not the prescribed ones. A
 session moved within the week stays legitimate; a calendar that lies about the past is useless.
@@ -95,29 +110,29 @@ every later run.
 
 ## Reading data without fooling yourself
 
-Full protocol in [`METHODE-DONNEES.md`](METHODE-DONNEES.md) *(French)*. It exists because four
+Full protocol in [`METHODE-DONNEES.md`](METHODE-DONNEES.md) _(French)_. It exists because four
 extraction bugs produced confident, wrong conclusions — three of them about sleep. All four were
 caught by the athlete comparing figures against his own Garmin app, none by any test. Hence the
 tests.
 
 `valider.py` must pass before any numeric review.
 
-| Test | Principle | What it would have caught |
-|---|---|---|
-| **Zero variance** | A field constant across hundreds of days is almost always the wrong field | Resting HR frozen at 43–44 for 447 days |
-| **Physiological bounds** | Sleep 4–12 h · resting HR 35–70 · phases ≤ duration | A 24-minute night, a 16-hour nap |
-| **Cross-source reconciliation** | On overlapping days, the full export and the daily exports must agree | All four, without exception |
+| Test                            | Principle                                                                 | What it would have caught               |
+| ------------------------------- | ------------------------------------------------------------------------- | --------------------------------------- |
+| **Zero variance**               | A field constant across hundreds of days is almost always the wrong field | Resting HR frozen at 43–44 for 447 days |
+| **Physiological bounds**        | Sleep 4–12 h · resting HR 35–70 · phases ≤ duration                       | A 24-minute night, a 16-hour nap        |
+| **Cross-source reconciliation** | On overlapping days, the full export and the daily exports must agree     | All four, without exception             |
 
 The four bugs:
 
 1. **Sleep duration** summed the gaps between phase markers — under-reporting by up to four hours
    (3 h 50 recorded for a real 7 h 47). Use session events, not phase sums.
 2. **Resting heart rate** read from `restingHeartRate`, a frozen rolling reference, instead of
-   `currentDayRestingHeartRate`. Wrong in *both* sources — 447 days.
+   `currentDayRestingHeartRate`. Wrong in _both_ sources — 447 days.
 3. **Two definitions of sleep** mixed depending on source: time in bed versus time asleep.
 4. **The last day of a Garmin export is partial**, and was overwriting a complete day.
 
-> **Day framing.** A row dated D covers the night *ending* on the morning of D. A Monday-to-Sunday
+> **Day framing.** A row dated D covers the night _ending_ on the morning of D. A Monday-to-Sunday
 > week is complete with Sunday's export; Monday's belongs to the next week.
 
 > `extract_garmin.py` **needs the export files as arguments**. Run bare, it re-displays existing
@@ -170,21 +185,21 @@ the folder and nobody was looking at the zip.
 
 ## Troubleshooting
 
-| Symptom | Cause |
-|---|---|
-| The **Code** tab offers a subscription | Free tier. Claude Code needs Pro or above. |
-| Strava finds no activities | In order: inactive subscription, incomplete authorisation, disconnected connector. Type `/mcp`. |
-| It asks for a Strava **Client ID** | Reply *"use the Strava connector already connected"*. |
-| The Monday review didn't happen | App closed or machine asleep. Settings → Desktop app → General → **Keep computer awake**. Closing the lid sleeps it anyway. |
-| It asks permission every week | Dry run not done, or you answered "allow once". |
-| Second tab black on iPhone | Safari blocks local iframe includes. Embed via `srcdoc`. |
-| Heart-rate zones look wrong | Strava zones rest on an estimated max HR. Rebuild from a measured lactate threshold. |
-| Shoe kilometres stopped moving | The export is a snapshot. New kilometres go to the pair marked as currently worn. |
-| HRV is empty | Not in the full export — only in the daily wellness exports. |
-| Watch rejects workout files | Upstream encoding bugs. This fork fixes them; check you're not running `npx claude-coach@latest`. |
-| Watch invisible over USB | Still in Garmin's USB mode — switch to **MTP** (hold MENU → Settings → System → USB Mode), then use an MTP client such as OpenMTP. Close Garmin Express first. |
-| Two workouts, one entry on the watch | Identical internal names. Prefix with the date, date first. |
-| It concludes something absurd from one week | Building a narrative on 7 days. Reply *"look at my whole history before concluding"*. |
+| Symptom                                     | Cause                                                                                                                                                          |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The **Code** tab offers a subscription      | Free tier. Claude Code needs Pro or above.                                                                                                                     |
+| Strava finds no activities                  | In order: inactive subscription, incomplete authorisation, disconnected connector. Type `/mcp`.                                                                |
+| It asks for a Strava **Client ID**          | Reply _"use the Strava connector already connected"_.                                                                                                          |
+| The Monday review didn't happen             | App closed or machine asleep. Settings → Desktop app → General → **Keep computer awake**. Closing the lid sleeps it anyway.                                    |
+| It asks permission every week               | Dry run not done, or you answered "allow once".                                                                                                                |
+| Second tab black on iPhone                  | Safari blocks local iframe includes. Embed via `srcdoc`.                                                                                                       |
+| Heart-rate zones look wrong                 | Strava zones rest on an estimated max HR. Rebuild from a measured lactate threshold.                                                                           |
+| Shoe kilometres stopped moving              | The export is a snapshot. New kilometres go to the pair marked as currently worn.                                                                              |
+| HRV is empty                                | Not in the full export — only in the daily wellness exports.                                                                                                   |
+| Watch rejects workout files                 | Upstream encoding bugs. This fork fixes them; check you're not running `npx claude-coach@latest`.                                                              |
+| Watch invisible over USB                    | Still in Garmin's USB mode — switch to **MTP** (hold MENU → Settings → System → USB Mode), then use an MTP client such as OpenMTP. Close Garmin Express first. |
+| Two workouts, one entry on the watch        | Identical internal names. Prefix with the date, date first.                                                                                                    |
+| It concludes something absurd from one week | Building a narrative on 7 days. Reply _"look at my whole history before concluding"_.                                                                          |
 
 > ⚠️ **Never run `npx claude-coach@latest`** if you depend on the FIT fixes — that's the published
 > version, which still has them. Use the local build: `npx tsx src/cli.ts render ...`.
