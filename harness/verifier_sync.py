@@ -3,7 +3,7 @@
 Contrôle de synchronisation de TOUTES les destinations.
 
 Motivation : le 22/08/2026, une séance de renfo a été déplacée dans Google Agenda
-sans que le plan, le programme HTML ni le support soient mis à jour. the athlete had to
+sans que le plan, le programme HTML ni le support soient mis à jour. Nicolas a dû
 croiser les sources lui-même pour s'en apercevoir. Une modification touche
 plusieurs destinations : les vérifier une par une n'est pas optionnel.
 
@@ -27,7 +27,7 @@ def mtime(p):
 chaine = [
     ("harness/generate_plan.py", "build/plan.json"),
     ("build/plan.json",          "build/programme.html"),
-    ("build/programme.html",     "dashboard.html"),
+    ("build/programme.html",     "marathon.html"),
 ]
 print("1. FRAÎCHEUR DE LA CHAÎNE")
 for src, dst in chaine:
@@ -54,7 +54,7 @@ f_plan = faites(plan)
 sources = {"build/plan.json": f_plan}
 for nom, extracteur in [
     ("build/programme.html", lambda t: json.loads(re.search(r'id="plan-data"[^>]*>(.*?)</script>', t, re.S).group(1))),
-    ("dashboard.html", lambda t: json.loads(re.search(r'id="plan-data"[^>]*>(.*?)</script>',
+    ("marathon.html", lambda t: json.loads(re.search(r'id="plan-data"[^>]*>(.*?)</script>',
                         H.unescape(re.search(r'<iframe srcdoc="(.*?)" title=', t, re.S).group(1)), re.S).group(1))),
 ]:
     p = BASE / nom
@@ -86,7 +86,7 @@ if vieux:
     print(f"   ✗ {len(vieux)} fichier(s) antérieur(s) au plan")
     ecarts.append(f"{len(vieux)} fichier(s) .fit plus anciens que le plan : régénérer")
 
-# Les ZIPS sont ce que you actually load into the watch — pas le dossier.
+# Les ZIPS sont ce que Nicolas charge réellement dans la montre — pas le dossier.
 # gen-fit.ts n'écrit que les .fit : le 24/08/2026, garmin-fit.zip datait du 17/08
 # alors que les séances avaient changé, et ce contrôle passait au vert.
 # Un zip périmé fait charger de mauvaises séances : c'est une désynchronisation.
@@ -110,12 +110,54 @@ for nom in ("garmin-fit.zip", "garmin-fit-a-charger.zip"):
 # ---------------------------------------------------------------------------
 # 4. Google Agenda — contrôlé par machine depuis le 23/08/2026
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# 3 bis. Provenance des températures
+# Le 25/08/2026, meteo.py interrogeait Paris en dur pour une sortie courue à
+# 150 km de là : 3,9 °C d'écart, 2,5 bpm de correction en trop, indice
+# d'efficience faussé. Corriger le script ne suffit pas — sans ce test, la
+# même chose reviendrait à la première sortie enregistrée sans coordonnées.
+# ---------------------------------------------------------------------------
+print("\n3 bis. TEMPÉRATURES")
+import glob as _glob
+sans_lieu, mauvais_lieu, sans_temp = [], [], []
+for f in sorted(_glob.glob(str(BASE / "suivi" / "semaine-*-strava.json"))):
+    for a in json.loads(Path(f).read_text(encoding="utf-8")):
+        if a.get("type") not in ("Run", "TrailRun"):
+            continue
+        ref = f"{a['date']} {a.get('name','')[:22]}"
+        if a.get("temp_c") is None:
+            sans_temp.append(ref); continue
+        if a.get("lat") is None or a.get("lon") is None:
+            sans_lieu.append(ref); continue
+        attendu = f"{round(float(a['lat']),1)},{round(float(a['lon']),1)}"
+        if a.get("temp_lieu") and a["temp_lieu"] != attendu:
+            mauvais_lieu.append(f"{ref} — mesurée en {a['temp_lieu']}, courue en {attendu}")
+n_ok = sum(1 for f in _glob.glob(str(BASE / "suivi" / "semaine-*-strava.json"))
+           for a in json.loads(Path(f).read_text(encoding="utf-8"))
+           if a.get("type") in ("Run", "TrailRun") and a.get("temp_c") is not None
+           and a.get("lat") is not None)
+print(f"   {'✓' if not (sans_lieu or mauvais_lieu) else '✗'} {n_ok} sortie(s) avec température et lieu")
+if sans_temp:
+    print(f"   ! {len(sans_temp)} sans température — lancer meteo.py")
+    notes.append(f"{len(sans_temp)} sortie(s) sans température : indice d'efficience non corrigé")
+for r in sans_lieu:
+    print(f"   ✗ sans coordonnées : {r}")
+if sans_lieu:
+    ecarts.append(f"{len(sans_lieu)} sortie(s) sans lat/lon : la météo est prise à Paris par défaut, "
+                  f"ce qui fausse la correction thermique. Relever les coordonnées via "
+                  f"get_activity_streams([\"location\"]) et relancer meteo.py.")
+for r in mauvais_lieu:
+    print(f"   ✗ {r}")
+if mauvais_lieu:
+    ecarts.append(f"{len(mauvais_lieu)} température(s) mesurée(s) au mauvais endroit : vider "
+                  f"suivi/meteo-cache.json et relancer meteo.py.")
+
 print("\n4. GOOGLE AGENDA")
 # L'agenda n'est plus « à croiser à la main » : ses descriptions sont générées par
 # harness/agenda.py depuis le plan, puis comparées au relevé réel de list_events.
 # Un relevé absent ou périmé est une DÉSYNCHRONISATION, pas une simple note.
 sem = max(1, min(30, (date.today() - date(2026, 8, 17)).days // 7 + 1))
-res = subprocess.run([sys.executable, str(BASE / "harness" / "agenda.py"), "verifier", str(sem)],
+res = subprocess.run([sys.executable, str(BASE / "scripts" / "agenda.py"), "verifier", str(sem)],
                      capture_output=True, text=True, cwd=str(BASE))
 for l in (res.stdout or "").rstrip().split("\n"):
     if l:

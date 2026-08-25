@@ -7,17 +7,32 @@
 set -e
 cd "$(dirname "$0")/.."          # racine du dépôt
 
+# Le numéro de semaine se lisait dans $2, si bien que `relancer.sh 2` sans
+# --plan faisait travailler toute la chaîne sur la semaine 1 en silence :
+# mauvaise météo, mauvais tableau de bord, mauvais zip pour la montre.
+PLAN=""
+SEM=""
+for a in "$@"; do
+  case "$a" in
+    --plan) PLAN=1 ;;
+    ''|*[!0-9]*) echo "Argument ignoré : $a" >&2 ;;
+    *) SEM="$a" ;;
+  esac
+done
+SEM="${SEM:-1}"
+echo "   semaine $SEM${PLAN:+ · régénération du plan}"
+
 echo "1/8  plan"
-[ "$1" = "--plan" ] && python3 harness/generate_plan.py > /dev/null
+[ -n "$PLAN" ] && python3 harness/generate_plan.py > /dev/null || true
 
 echo "2/8  températures"
-python3 harness/meteo.py "${2:-1}" > /dev/null
+python3 harness/meteo.py "$SEM" > /dev/null
 
 echo "3/8  validation des données"
 python3 harness/valider.py > /dev/null || { echo "   ✗ ANOMALIE — arrêt"; exit 1; }
 
 echo "4/8  tableau de bord"
-python3 harness/dashboard.py "${2:-1}" > /dev/null
+python3 harness/dashboard.py "$SEM" > /dev/null
 # Effet du moment de la journée sur la FC : le fichier s'enrichit chaque semaine,
 # et le script refuse de conclure avant 5 sorties par créneau.
 python3 harness/moment_journee.py > suivi/moment-journee.txt 2>&1 || true
@@ -30,7 +45,7 @@ echo "6/8  fichiers Garmin"
 npx tsx gen-fit.ts > /dev/null
 # gen-fit.ts écrit les .fit mais PAS les zips — un zip périmé fait charger
 # d'anciennes séances dans la montre, sans qu'aucun contrôle ne le voie.
-python3 harness/zip_fit.py "${2:-1}" > /dev/null
+python3 harness/zip_fit.py "$SEM" > /dev/null
 
 echo "7/8  support unique"
 python3 harness/rapport.py | tail -1
