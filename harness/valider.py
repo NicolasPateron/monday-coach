@@ -35,7 +35,15 @@ from statistics import mean, median, pstdev
 BASE = Path(__file__).parent.parent
 SERIE = BASE / "garmin-export" / "wellness-daily.json"
 
-_exiger(SERIE, "Garmin wellness data", "run ./harness/init.sh, then import a Garmin export (README → Setup, step 5)")
+# Garmin is optional, and the README says so. Without wellness data there is
+# simply nothing to validate — the rest of the chain (plan, Strava, calendar,
+# watch files) works fine. Blocking here would contradict the documentation
+# and lock out anyone who doesn't own a Garmin watch.
+if not SERIE.exists():
+    print("  · No Garmin wellness data — skipping validation.")
+    print("    (Expected at garmin-export/wellness-daily.json. Optional: without it you")
+    print("     lose the sleep, HRV and resting-HR curves, and keep everything else.)")
+    sys.exit(0)
 
 d = json.loads(SERIE.read_text(encoding="utf-8"))
 anomalies, avertissements = [], []

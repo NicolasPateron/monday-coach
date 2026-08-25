@@ -1,22 +1,19 @@
 {
   "_readme": "Copy this file to harness/athlete.json and fill it in. athlete.json is gitignored — it holds your race, your target and your measured physiological values. Everything here feeds harness/generate_plan.py.",
-
   "athlete": "Your Name",
   "event": "Valencia Marathon",
   "event_date": "2026-12-06",
   "plan_start": "2026-06-22",
   "total_weeks": 24,
-
   "target_time": "3h29",
   "target_pace": "4:57/km",
-
   "_measured": "The next four should be MEASURED, not estimated. lthr and threshold_pace come from a 30-minute time trial or your watch's lactate-threshold test; the zones are built from lthr, never from hr_max.",
   "lthr": 168,
   "threshold_pace": "4:44/km",
   "resting_hr": 51,
   "hr_max": 186,
-
   "weight_kg": 76.8,
-
+  "target_weight_kg": 71.5,
+  "_weight_note": "target_weight_kg is optional. Leave it out and the dashboard simply won't draw a weight trajectory — everything else still works.",
   "_note": "hr_max is recorded for reference only — the plan's zones are derived from lthr, because an estimated maximum heart rate is not a usable basis for training zones."
 }

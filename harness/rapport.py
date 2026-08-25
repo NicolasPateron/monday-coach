@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Génère le support unique de la prépa : marathon.html (onglets Suivi + Programme)
+Génère le support unique de la prépa : dashboard.html (onglets Suivi + Programme)
 
 Croise plan + Strava (via suivi/journal.json) + Garmin (wellness-daily.json) + poids.csv.
 Page autonome : le programme 30 semaines est embarqué via srcdoc, aucun accès fichier requis.
@@ -11,6 +11,16 @@ Usage : python3 rapport.py
 import csv, html as _html, json
 from datetime import date, datetime, timedelta
 from pathlib import Path
+
+def _exiger(chemin, quoi, remede):
+    """A missing file must produce a sentence, not a Python traceback.
+    This is often the first thing a new user sees."""
+    import sys
+    if not Path(chemin).exists():
+        sys.exit(f"\n  ✗ {quoi} not found.\n"
+                 f"    Expected at: {chemin}\n"
+                 f"    → {remede}\n")
+
 from statistics import mean
 
 import sys
@@ -18,7 +28,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from dashboard import poids_cible, POIDS_DEPART, POIDS_CIBLE, PLAN_START, semaine_de, lundi_de
 
 BASE = Path(__file__).parent.parent
-OUT = BASE / "marathon.html"                              # support unique, deux onglets
+OUT = BASE / "dashboard.html"                              # support unique, deux onglets
 PROGRAMME = BASE / "build" / "programme.html"              # source embarquée dans l'onglet Programme
 COURSE = date(2027, 3, 14)
 
@@ -250,23 +260,25 @@ etat_sommeil = "good" if sommeil and sommeil >= 420 else "warn" if sommeil else 
 etat_vfc = "good" if vfc and vfc >= 73 else "warn" if vfc else ""
 
 tuiles = "".join([
-    tuile(f"J−{jours_restants}", "avant Rome", COURSE.strftime("%d/%m/%Y")),
+    tuile(f"J−{jours_restants}", "avant la course", COURSE.strftime("%d/%m/%Y")),
     tuile(f"{sem_actuelle}<span class='u'>/30</span>", "semaine",
           semaines_plan[sem_actuelle]["phase"] if sem_actuelle in semaines_plan else ""),
     tuile(f"{poids_now:.1f}<span class='u'>kg</span>" if poids_now else "—", "poids",
-          f"cible S{sem_actuelle} : {cible_now:.1f} kg" if poids_now else "", etat_poids),
+          f"cible S{sem_actuelle} : {cible_now:.1f} kg" if (poids_now and cible_now is not None)
+          else "", etat_poids),
     tuile(f"{int(sommeil//60)}<span class='u'>h</span>{int(sommeil%60):02d}" if sommeil else "—",
           "sommeil / nuit", "moyenne 7 jours", etat_sommeil),
     tuile(f"{vfc:.0f}<span class='u'>ms</span>" if vfc else "—", "VFC",
           "baseline 73–105" if vfc else "", etat_vfc),
-    tuile(f"{fcr:.0f}", "FC de repos", "médiane 46 · alerte > 52" if fcr else ""),
+    tuile(f"{fcr:.0f}" if fcr else "—", "FC de repos",
+          "médiane 46 · alerte > 52" if fcr else ""),
 ])
 
 # ---------------------------------------------------------------------------
 # Commentaires automatiques
 # ---------------------------------------------------------------------------
 obs = []
-if poids_now is not None:
+if poids_now is not None and POIDS_DEPART is not None and POIDS_CIBLE is not None:
     perdu = POIDS_DEPART - poids_now
     if ecart <= 0.5:
         obs.append(("good", "Poids dans la trajectoire",

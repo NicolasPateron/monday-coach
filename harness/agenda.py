@@ -153,6 +153,13 @@ def cmd_verifier(args):
     if not chemin.is_absolute():
         chemin = RACINE / chemin
     if not chemin.exists():
+        # Distinguer « jamais configuré » de « configuré puis dérivé ». Google Agenda
+        # est facultatif : sans lui, le reste de la chaîne fonctionne, et un rouge
+        # permanent sur une fonctionnalité qu'on n'utilise pas finit par être ignoré.
+        if not ATTENDU.exists():
+            print("· Google Agenda non configuré — contrôle ignoré.")
+            print("  (Facultatif. Pour l'activer : voir README → Setup, étape 7.)")
+            return 0
         print(f"✗ Aucun relevé d'agenda ({chemin.relative_to(RACINE)}).")
         print("  Lance list_events sur la semaine et enregistre la réponse dans ce fichier.")
         return 1

@@ -38,8 +38,25 @@ SUIVI = BASE / "suivi"
 JOURNAL = SUIVI / "journal.json"
 
 PLAN_START = date(2026, 8, 17)
-POIDS_DEPART = None   # déduit de la première ligne de poids.csv
-POIDS_CIBLE = 80.6
+
+# Le poids est facultatif : le suivi entier fonctionne sans une seule pesée.
+# Le point de départ est la PREMIÈRE ligne de poids.csv ; la cible se lit dans
+# harness/athlete.json si elle y figure, sinon on ne trace pas de trajectoire.
+def _poids_reference():
+    import csv as _csv, json as _json
+    depart = None
+    if POIDS.exists():
+        with POIDS.open(encoding="utf-8") as f:
+            lignes = [r for r in _csv.DictReader(f) if r.get("kg")]
+        if lignes:
+            depart = float(lignes[0]["kg"])
+    cible = None
+    cfg = BASE / "harness" / "athlete.json"
+    if cfg.exists():
+        cible = _json.loads(cfg.read_text(encoding="utf-8")).get("target_weight_kg")
+    return depart, cible
+
+POIDS_DEPART, POIDS_CIBLE = _poids_reference()
 
 # ---------------------------------------------------------------------------
 # Trajectoire de poids : perte concentrée sur Reprise/Base/Développement,
@@ -47,7 +64,9 @@ POIDS_CIBLE = 80.6
 # Perdre du poids pendant le pic de charge (S25-S27, 57-60 km/sem) dégrade la
 # récupération et augmente le risque de blessure : l'objectif doit être atteint AVANT.
 # ---------------------------------------------------------------------------
-def poids_cible(semaine: int) -> float:
+def poids_cible(semaine: int):
+    if POIDS_DEPART is None or POIDS_CIBLE is None:
+        return None                     # pas de pesée, ou pas d'objectif de poids
     paliers = [(4, 0.50), (12, 0.55), (18, 0.45), (20, 0.00), (22, 0.45)]
     p, s = POIDS_DEPART, 0
     for fin, taux in paliers:

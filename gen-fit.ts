@@ -6,8 +6,8 @@
 import { readFileSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { generateFit, isFitSupported } from "./src/viewer/lib/export/fit.js";
 
-const PLAN = "../build/plan.json";
-const OUT = "../garmin-fit";
+const PLAN = "build/plan.json";
+const OUT = "garmin-fit";
 
 const slug = (s: string) =>
   s
@@ -46,7 +46,10 @@ for (const week of plan.weeks) {
         skipped.push(`${day.date} ${w.sport} — ${w.name}`);
         continue;
       }
-      const bytes = await generateFit({ ...w, name: nomPourLaMontre(day.date, w.name) }, {} as never);
+      const bytes = await generateFit(
+        { ...w, name: nomPourLaMontre(day.date, w.name) },
+        {} as never
+      );
       const file = `S${String(week.weekNumber).padStart(2, "0")}_${day.date}_${slug(w.name)}.fit`;
       writeFileSync(`${OUT}/${file}`, bytes);
       ok++;
@@ -57,5 +60,6 @@ for (const week of plan.weeks) {
 console.log(`${ok} fichiers .fit générés dans ${OUT}`);
 if (skipped.length) {
   console.log(`\n${skipped.length} séances non exportables (sport non géré par le SDK) :`);
-  for (const s of [...new Set(skipped.map((x) => x.split("—")[0].split(" ")[1]))]) console.log(`  - sport "${s}"`);
+  for (const s of [...new Set(skipped.map((x) => x.split("—")[0].split(" ")[1]))])
+    console.log(`  - sport "${s}"`);
 }

@@ -27,7 +27,7 @@ def mtime(p):
 chaine = [
     ("harness/generate_plan.py", "build/plan.json"),
     ("build/plan.json",          "build/programme.html"),
-    ("build/programme.html",     "marathon.html"),
+    ("build/programme.html",     "dashboard.html"),
 ]
 print("1. FRAÎCHEUR DE LA CHAÎNE")
 for src, dst in chaine:
@@ -54,7 +54,7 @@ f_plan = faites(plan)
 sources = {"build/plan.json": f_plan}
 for nom, extracteur in [
     ("build/programme.html", lambda t: json.loads(re.search(r'id="plan-data"[^>]*>(.*?)</script>', t, re.S).group(1))),
-    ("marathon.html", lambda t: json.loads(re.search(r'id="plan-data"[^>]*>(.*?)</script>',
+    ("dashboard.html", lambda t: json.loads(re.search(r'id="plan-data"[^>]*>(.*?)</script>',
                         H.unescape(re.search(r'<iframe srcdoc="(.*?)" title=', t, re.S).group(1)), re.S).group(1))),
 ]:
     p = BASE / nom
