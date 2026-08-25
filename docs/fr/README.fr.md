@@ -35,10 +35,10 @@ utilise claude-coach et arrête ta lecture ici.** Son README est conservé dans
 **Soyons clairs sur la ligne de départ.** claude-coach plus le connecteur MCP officiel de Strava
 t'emmène déjà loin. Le connecteur donne à Claude un accès en lecture à tes activités, ta fréquence
 cardiaque par sortie, tes zones et le kilométrage de ton matériel — donc tu peux simplement
-*demander* :
+_demander_ :
 
-> *« Compare ma semaine au plan. Ma FC sur les sorties faciles était-elle trop haute ? Combien de
-> kilomètres sur mes chaussures ? »*
+> _« Compare ma semaine au plan. Ma FC sur les sorties faciles était-elle trop haute ? Combien de
+> kilomètres sur mes chaussures ? »_
 
 et obtenir une bonne réponse. **Ce n'est pas ce fork. Ça marche déjà, tel quel.** Si ça couvre ton
 besoin, tu n'as besoin de rien ici.
@@ -55,7 +55,7 @@ seul, l'agenda se remplit seul, les fichiers de la montre sont prêts avant que 
 
 **2 · Il utilise des données que Strava n'a pas.** Sommeil, variabilité cardiaque et FC de repos
 viennent des exports de données Garmin. Strava n'en transporte rien, et aucun connecteur ne te les
-donnera. Ce sont les chiffres qui préviennent *avant* que tu casses, pas après — et c'est ce qui
+donnera. Ce sont les chiffres qui préviennent _avant_ que tu casses, pas après — et c'est ce qui
 permet au bilan du lundi de dire « allège cette semaine » avec quelque chose derrière.
 
 **3 · Ses réponses sont calculées, pas réimprovisées.** Pose la même question à Claude à deux
@@ -67,26 +67,26 @@ comparaison d'une semaine sur l'autre qui rend une tendance visible. Et chaque s
 
 C'est tout. Tout ce qui suit découle de ces trois points.
 
-| | claude-coach + MCP Strava | + ce fork |
-|---|---|---|
-| Construit le plan | ✅ | l'utilise comme source de vérité |
-| Lit ce que tu as réellement couru | ✅ si tu demandes | **sans le demander, et réécrit dans le plan** |
-| Kilométrage des chaussures | ✅ via le matériel Strava | **+ seuil de remplacement et la semaine du plan où chaque paire lâche** |
-| Sommeil, VFC, FC de repos | — | **depuis les exports de données Garmin** |
-| Progrès indépendant de la météo | — | **allure à FC constante, corrigée de la température** |
-| Semaine à venir dans l'agenda | tu télécharges un `.ics` | **écrite depuis le plan et vérifiée, chaque semaine** |
-| Ajuster quand tu prends du retard | ✅ si tu demandes | **se fait tout seul, dans des limites fixes** |
+|                                   | claude-coach + MCP Strava | + ce fork                                                               |
+| --------------------------------- | ------------------------- | ----------------------------------------------------------------------- |
+| Construit le plan                 | ✅                        | l'utilise comme source de vérité                                        |
+| Lit ce que tu as réellement couru | ✅ si tu demandes         | **sans le demander, et réécrit dans le plan**                           |
+| Kilométrage des chaussures        | ✅ via le matériel Strava | **+ seuil de remplacement et la semaine du plan où chaque paire lâche** |
+| Sommeil, VFC, FC de repos         | —                         | **depuis les exports de données Garmin**                                |
+| Progrès indépendant de la météo   | —                         | **allure à FC constante, corrigée de la température**                   |
+| Semaine à venir dans l'agenda     | tu télécharges un `.ics`  | **écrite depuis le plan et vérifiée, chaque semaine**                   |
+| Ajuster quand tu prends du retard | ✅ si tu demandes         | **se fait tout seul, dans des limites fixes**                           |
 
 Deux précisions honnêtes sur ce tableau :
 
 - **Strava expose un flux de température** (`get_activity_streams`, `temp`), donc la correction
   thermique n'a pas strictement besoin de ce fork — mais le flux n'est renseigné que si ta montre a
   le capteur, et beaucoup ne l'ont pas. Ce que le fork ajoute, c'est de le faire
-  *systématiquement*, avec une interrogation météo en repli. Sans correction, une prépa de l'été au
+  _systématiquement_, avec une interrogation météo en repli. Sans correction, une prépa de l'été au
   printemps paraît 20 s/km plus rapide par simple refroidissement.
 - **Strava expose le kilométrage du matériel**, donc « combien j'ai couru avec celles-ci ? » ne
   demande aucun fork non plus. Ce qui est ajouté, c'est le seuil de remplacement et la projection —
-  *à quelle semaine du plan cette paire lâche-t-elle ?*
+  _à quelle semaine du plan cette paire lâche-t-elle ?_
 
 ### À quoi ça ressemble
 
@@ -124,7 +124,7 @@ Et le second onglet, qui est le viewer de claude-coach, inchangé :
 
 ![Le viewer de claude-coach](../images/upstream-viewer.jpg)
 
-*Capture issue du [dépôt claude-coach](https://github.com/felixrieseberg/claude-coach).*
+_Capture issue du [dépôt claude-coach](https://github.com/felixrieseberg/claude-coach)._
 
 ---
 
@@ -135,15 +135,15 @@ Huit bugs, trouvés en l'utilisant intensivement pendant six mois. Tous dans deu
 **Sept dans l'export Garmin `.fit`** — la montre refusait silencieusement les séances, ou les
 affichait sans nom :
 
-| Bug | Correctif |
-|---|---|
-| `targetType: "heart_rate"` | `"heartRate"` — le SDK veut du camelCase |
-| `durationType: "repeat_until_steps_cmplt"` | `"repeatUntilStepsCmplt"` |
-| `subSport: "lap_swimming"` / `"strength_training"` | `"lapSwimming"` / `"strengthTraining"` |
-| Champ `workoutStepName` | `wktStepName` — le vrai nom du champ ; l'autre est ignoré en silence |
-| Champ `workoutName` | `wktName` — pareil |
-| Pas de répétition placé *avant* ses enfants | Va *après* : `durationValue` = index du 1er enfant, `targetValue` = nombre de répétitions |
-| FC écrite en bpm bruts | FIT lit 1–100 comme un % de FC max : 145 bpm devenait « 145 % de la max ». Converti |
+| Bug                                                | Correctif                                                                                 |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `targetType: "heart_rate"`                         | `"heartRate"` — le SDK veut du camelCase                                                  |
+| `durationType: "repeat_until_steps_cmplt"`         | `"repeatUntilStepsCmplt"`                                                                 |
+| `subSport: "lap_swimming"` / `"strength_training"` | `"lapSwimming"` / `"strengthTraining"`                                                    |
+| Champ `workoutStepName`                            | `wktStepName` — le vrai nom du champ ; l'autre est ignoré en silence                      |
+| Champ `workoutName`                                | `wktName` — pareil                                                                        |
+| Pas de répétition placé _avant_ ses enfants        | Va _après_ : `durationValue` = index du 1er enfant, `targetValue` = nombre de répétitions |
+| FC écrite en bpm bruts                             | FIT lit 1–100 comme un % de FC max : 145 bpm devenait « 145 % de la max ». Converti       |
 
 **Un dans le viewer** — `loadCompleted()` ne lisait que le `localStorage` et écrasait le champ
 `completed` du plan : une sortie réellement courue n'apparaissait jamais faite. Le plan fait
@@ -170,11 +170,26 @@ ce qui a été encodé, dont six échouent sur l'exporteur non corrigé. La suit
 git clone https://github.com/NicolasPateron/monday-coach.git
 cd monday-coach
 npm install
+npm run build
+npm link            # ← c'est celle qui compte, voir ci-dessous
 ./harness/init.sh
 ```
 
 Ou [télécharger le ZIP](https://github.com/NicolasPateron/monday-coach/archive/refs/heads/main.zip)
 si tu préfères te passer de git.
+
+> ### Pourquoi `npm link` n'est pas optionnel
+>
+> La compétence `/coach` termine son travail en lançant `npx claude-coach render`. Sans
+> `npm link`, npm va chercher **le paquet publié sur le registre — qui contient encore les sept
+> bugs FIT.** Tu aurais cloné ce fork puis contourné tous ses correctifs.
+>
+> `npm link` fait pointer la commande `claude-coach` vers ta build locale. Vérifié : le rendu d'un
+> plan par le binaire lié produit `heartRate`, `wktName` et `repeatUntilStepsCmplt`, et zéro
+> occurrence des noms de champs cassés.
+>
+> Pour contrôler chez toi : `which claude-coach` doit pointer dans ton clone, pas dans un cache
+> npm global. Pour défaire : `npm unlink -g claude-coach`.
 
 `init.sh` crée les fichiers de travail dont l'outillage a besoin — aucun n'est versionné, parce
 qu'ils contiennent des données personnelles. Il est rejouable sans rien écraser. Ensuite tu édites
@@ -198,22 +213,22 @@ Rien d'autre dans ce fork n'est nécessaire pour qu'ils fonctionnent.
 Environ 90 minutes, une seule fois. Les étapes 3 et 4 sont celles de claude-coach ; le reste câble
 la boucle autour.
 
-| | | |
-|---|---|---|
-| **0** | **Demande ton export de données Garmin** sur garmin.com → Gestion des données. Jusqu'à 48 h, donc lance-le maintenant et continue. | 2 min |
-| **1** | Installe [Claude Code](https://claude.ai/download), ouvre l'onglet **Code**, crée un dossier, choisis **Opus**. | 10 min |
-| **2** | Branche Strava : **Customize → Connectors →** `https://mcp.strava.com/mcp`. Lecture seule. | 5 min |
-| **3** | Installe la compétence coach — [prompt](prompts.fr.md#1--installer-la-compétence-coach). | 5 min |
-| **4** | **Laisse la compétence construire ton plan.** C'est claude-coach qui fait son travail : l'entretien, les zones, le plan, le viewer. | 30 min |
-| **5** | Charge ton historique Garmin — [prompt](prompts.fr.md#2--charger-ton-historique-garmin). | 10 min |
-| **6** | Fabrique l'onglet de suivi — [prompt](prompts.fr.md#3--longlet-de-suivi). | 20 min |
-| **7** | Programme le bilan du lundi — [prompt](prompts.fr.md#4--le-bilan-du-lundi). | 15 min |
-| **8** | Essai à blanc, pour qu'il demande ses autorisations pendant que tu regardes. | 10 min |
+|       |                                                                                                                                                                                                                                                                       |        |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| **0** | **Demande ton export de données Garmin** sur garmin.com → Gestion des données. Jusqu'à 48 h, donc lance-le maintenant et continue.                                                                                                                                    | 2 min  |
+| **1** | Installe [Claude Code](https://claude.ai/download), ouvre l'onglet **Code**, crée un dossier, choisis **Opus**.                                                                                                                                                       | 10 min |
+| **2** | Branche Strava : **Customize → Connectors →** `https://mcp.strava.com/mcp`. Lecture seule.                                                                                                                                                                            | 5 min  |
+| **3** | Installe la compétence coach — [prompt](prompts.fr.md#1--installer-la-compétence-coach).                                                                                                                                                                              | 5 min  |
+| **4** | **Laisse la compétence construire ton plan.** C'est claude-coach qui fait son travail : l'entretien, les zones, le plan, le viewer. Si elle rend avec `npx claude-coach`, vérifie que tu as bien fait `npm link` — sinon tu récupères la build publiée, bugs compris. | 30 min |
+| **5** | Charge ton historique Garmin — [prompt](prompts.fr.md#2--charger-ton-historique-garmin).                                                                                                                                                                              | 10 min |
+| **6** | Fabrique l'onglet de suivi — [prompt](prompts.fr.md#3--longlet-de-suivi).                                                                                                                                                                                             | 20 min |
+| **7** | Programme le bilan du lundi — [prompt](prompts.fr.md#4--le-bilan-du-lundi).                                                                                                                                                                                           | 15 min |
+| **8** | Essai à blanc, pour qu'il demande ses autorisations pendant que tu regardes.                                                                                                                                                                                          | 10 min |
 
 > **Ne crée pas d'application Strava.** Le README de claude-coach décrit un chemin par Client ID et
 > Client Secret — écrit avant que Strava publie un connecteur officiel. Avec le connecteur, tu n'en
-> as pas besoin. Si la compétence en réclame un, réponds *« utilise le connecteur Strava déjà
-> branché »*.
+> as pas besoin. Si la compétence en réclame un, réponds _« utilise le connecteur Strava déjà
+> branché »_.
 
 **Prérequis :** un abonnement Claude payant (Pro ou au-dessus), un abonnement Strava (le connecteur
 est réservé aux abonnés), Python 3.9+, et Node 18+ pour le viewer et l'export FIT. La montre Garmin
@@ -224,13 +239,13 @@ courbes de récupération et les séances guidées, et tu gardes tout le reste.
 
 ## Ta semaine, une fois que ça tourne
 
-| Quand | Ce que tu fais |
-|---|---|
-| Chaque sortie | Rien. Ta montre synchronise avec Strava. |
-| Lundi matin | Tu lis le bilan qui s'est écrit tout seul. **3 minutes.** |
-| Lundi, facultatif | Tu déposes tes exports Garmin quotidiens dans Téléchargements. 2 min. |
-| Quand tu te pèses | Tu ajoutes une ligne à un fichier. 10 secondes. |
-| Quand tu achètes des chaussures | Tu le dis à Claude, en une phrase. |
+| Quand                           | Ce que tu fais                                                        |
+| ------------------------------- | --------------------------------------------------------------------- |
+| Chaque sortie                   | Rien. Ta montre synchronise avec Strava.                              |
+| Lundi matin                     | Tu lis le bilan qui s'est écrit tout seul. **3 minutes.**             |
+| Lundi, facultatif               | Tu déposes tes exports Garmin quotidiens dans Téléchargements. 2 min. |
+| Quand tu te pèses               | Tu ajoutes une ligne à un fichier. 10 secondes.                       |
+| Quand tu achètes des chaussures | Tu le dis à Claude, en une phrase.                                    |
 
 Tu ne promptes jamais le bilan du lundi. Si tu te retrouves à taper « fais mon bilan », la tâche
 planifiée ne tourne pas.
@@ -254,7 +269,7 @@ Ce qui vaut la peine d'être connu est dans **[architecture.fr.md](architecture.
   toujours ; celle-ci a produit deux versions incompatibles de la même séance
 - **comment les données sont validées avant d'en conclure quoi que ce soit** — quatre bugs
   d'extraction ont produit trois conclusions assurées et fausses sur le sommeil
-- **la règle qui en est sortie** : *une destination qui n'est pas vérifiée n'est pas synchronisée*
+- **la règle qui en est sortie** : _une destination qui n'est pas vérifiée n'est pas synchronisée_
 
 ---
 
