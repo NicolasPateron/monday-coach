@@ -15,10 +15,30 @@ export const planData = loadPlanData();
 const storageKey = `plan-${planData.meta.id}-completed`;
 
 export function loadCompleted(): Record<string, boolean> {
-  const saved = localStorage.getItem(storageKey);
-  return saved ? JSON.parse(saved) : {};
+  // Les séances marquées `completed` dans le plan lui-même sont pilotées par les
+  // données réelles (Strava) : elles font autorité et sont fusionnées par-dessus
+  // l'état local du navigateur. Sans ça, une séance effectivement courue
+  // n'apparaîtrait jamais faite — le localStorage seul est aussi peu fiable sur
+  // une page file:// ou dans une iframe srcdoc (origine opaque).
+  const depuisPlan: Record<string, boolean> = {};
+  for (const semaine of planData.weeks ?? [])
+    for (const jour of semaine.days ?? [])
+      for (const w of jour.workouts ?? []) if (w.completed) depuisPlan[w.id] = true;
+
+  let local: Record<string, boolean> = {};
+  try {
+    const saved = localStorage.getItem(storageKey);
+    local = saved ? JSON.parse(saved) : {};
+  } catch {
+    /* stockage indisponible (origine opaque) : on se contente du plan */
+  }
+  return { ...local, ...depuisPlan };
 }
 
 export function saveCompleted(completed: Record<string, boolean>): void {
-  localStorage.setItem(storageKey, JSON.stringify(completed));
+  try {
+    localStorage.setItem(storageKey, JSON.stringify(completed));
+  } catch {
+    /* stockage indisponible : le plan reste la source de vérité */
+  }
 }

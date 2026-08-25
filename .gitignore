@@ -1,41 +1,21 @@
-# Dependencies
+# Personal data — never commit
+poids.csv
+garmin-export/
+suivi/
+build/
+dashboard.html
+*-garmin.zip
+
+# Generated artefacts
+garmin-fit/
+garmin-fit*.zip
+docs/demo/demo.html
+docs/demo/_tmp/
+
+# Build & tooling
 node_modules/
-
-# Build output
 dist/
-
-# Test coverage
-coverage/
-
-# Environment and secrets
-.env
-.env.*
-
-# SQLite databases
-*.db
-
-# Editor
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
 .DS_Store
-Thumbs.db
 
-# Logs
-*.log
-npm-debug.log*
-
-# Claude Code
-.claude/
-
-# Training plans (generated files with date suffix like event-name-2026-03-28.json)
-*-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9].json
-*-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9].html
-
-# Built template (generated from src/viewer via Vite)
-templates/plan-viewer.html
-cloud-output/
-cloud-output/
+# Your own configuration — holds personal data
+harness/athlete.json
