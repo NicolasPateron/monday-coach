@@ -5,18 +5,20 @@ designed up front.
 
 Every piece below traces back to a specific failure, in order of when it hurt:
 
-| What broke                                                        | What was added                                                    |
-| ----------------------------------------------------------------- | ----------------------------------------------------------------- |
-| The watch silently rejected exported workouts                     | The seven FIT fixes, and the regression tests `.fit` never had    |
-| Completed runs showed as not done                                 | Plan state merged over browser storage in the viewer              |
-| Sleep under-reported by up to four hours                          | Extraction rewritten from session events, plus a validation suite |
-| Resting heart rate frozen at a constant across 447 days           | The correct field, and cross-source reconciliation                |
-| Efficiency "improved" 20 s/km when autumn arrived                 | Temperature correction on every heart rate                        |
-| Rendering before marking completions wiped six weeks of progress  | One pipeline, one valid order, staleness guards                   |
-| Calendar and dashboard disagreed about the same session           | Calendar text generated from the plan, never typed                |
-| The watch archive was a week stale while every check showed green | Zip freshness verified, validated by injecting the fault          |
-| A fresh clone crashed with a Python traceback                     | `init.sh`, and errors that name the file and the fix              |
-| The skill rendered with the published build, bypassing every fix  | `npm link` required at install, and said twice                    |
+| What broke                                                        | What was added                                                                       |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| The watch silently rejected exported workouts                     | The seven FIT fixes, and the regression tests `.fit` never had                       |
+| Completed runs showed as not done                                 | Plan state merged over browser storage in the viewer                                 |
+| Sleep under-reported by up to four hours                          | Extraction rewritten from session events, plus a validation suite                    |
+| Resting heart rate frozen at a constant across 447 days           | The correct field, and cross-source reconciliation                                   |
+| Efficiency "improved" 20 s/km when autumn arrived                 | Temperature correction on every heart rate                                           |
+| Rendering before marking completions wiped six weeks of progress  | One pipeline, one valid order, staleness guards                                      |
+| Calendar and dashboard disagreed about the same session           | Calendar text generated from the plan, never typed                                   |
+| The watch archive was a week stale while every check showed green | Zip freshness verified, validated by injecting the fault                             |
+| `relancer.sh 2` silently ran the whole chain on week 1            | Arguments accepted in any order, and the week echoed at launch                       |
+| Temperature read from a hard-coded city, 150 km from the run      | Coordinates taken from the activity, plus a check that the reading matches the place |
+| A fresh clone crashed with a Python traceback                     | `init.sh`, and errors that name the file and the fix                                 |
+| The skill rendered with the published build, bypassing every fix  | `npm link` required at install, and said twice                                       |
 
 ---
 

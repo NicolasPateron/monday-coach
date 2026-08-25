@@ -17,6 +17,8 @@ Chaque pièce ci-dessous remonte à une panne précise, dans l'ordre où elle a 
 | Rendre avant de marquer les séances faites a effacé six semaines de progression | Un pipeline, un seul ordre valide, garde-fous de fraîcheur                         |
 | Agenda et tableau de bord se contredisaient sur la même séance                  | Texte d'agenda généré depuis le plan, jamais saisi                                 |
 | L'archive montre était périmée d'une semaine, tous les contrôles au vert        | Fraîcheur des zips vérifiée, validée par injection du défaut                       |
+| `relancer.sh 2` faisait tourner toute la chaîne sur la semaine 1, en silence    | Arguments reconnus dans n'importe quel ordre, et la semaine affichée au lancement  |
+| Température lue sur une ville en dur, à 150 km du lieu de la sortie             | Coordonnées prises sur l'activité, et contrôle que la mesure correspond au lieu    |
 | Un clone neuf plantait sur une trace Python                                     | `init.sh`, et des erreurs qui nomment le fichier et le remède                      |
 | La compétence rendait avec la build publiée, contournant tous les correctifs    | `npm link` exigé à l'installation, et rappelé deux fois                            |
 
