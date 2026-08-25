@@ -30,49 +30,63 @@ utilise claude-coach et arrête ta lecture ici.** Son README est conservé dans
 
 ## Ce que ce fork ajoute, et pourquoi ça compte
 
-claude-coach répond à *qu'est-ce que je dois faire ?*
+### D'abord, ce que tu peux déjà faire sans ce fork
 
-Ce fork répond à *qu'est-ce que je fais maintenant que la semaine 3 ne s'est pas passée comme
-prévu ?*
+**Soyons clairs sur la ligne de départ.** claude-coach plus le connecteur MCP officiel de Strava
+t'emmène déjà loin. Le connecteur donne à Claude un accès en lecture à tes activités, ta fréquence
+cardiaque par sortie, tes zones et le kilométrage de ton matériel — donc tu peux simplement
+*demander* :
 
-Un plan s'écrit une fois. Une préparation dure six mois. Entre les deux, tu dors mal, il fait
-chaud, tu sautes une semaine, tes chaussures meurent, et tu cours tes sorties faciles trop vite
-sans t'en rendre compte. **Rien de tout ça n'est visible dans un plan.** C'est visible dans tes
-données — et personne n'a la patience de les croiser chaque lundi.
+> *« Compare ma semaine au plan. Ma FC sur les sorties faciles était-elle trop haute ? Combien de
+> kilomètres sur mes chaussures ? »*
 
-Alors ce fork le fait pour toi, chaque lundi matin, sans que tu lances quoi que ce soit.
+et obtenir une bonne réponse. **Ce n'est pas ce fork. Ça marche déjà, tel quel.** Si ça couvre ton
+besoin, tu n'as besoin de rien ici.
 
-| | claude-coach | + ce fork |
+### Ce que ce fork change réellement
+
+Trois choses, et elles sont plus étroites que « il en fait plus » :
+
+**1 · Ça se produit sans que tu le demandes.** La comparaison ci-dessus n'existe que si tu penses à
+la réclamer, chaque semaine, pendant six mois. Le mode de défaillance réel d'un plan
+d'entraînement n'est pas un mauvais algorithme — c'est le quatrième lundi où tu n'ouvres pas
+l'ordinateur. Ce fork est une tâche planifiée plus les scripts qu'elle pilote : le bilan s'écrit
+seul, l'agenda se remplit seul, les fichiers de la montre sont prêts avant que tu les cherches.
+
+**2 · Il utilise des données que Strava n'a pas.** Sommeil, variabilité cardiaque et FC de repos
+viennent des exports de données Garmin. Strava n'en transporte rien, et aucun connecteur ne te les
+donnera. Ce sont les chiffres qui préviennent *avant* que tu casses, pas après — et c'est ce qui
+permet au bilan du lundi de dire « allège cette semaine » avec quelque chose derrière.
+
+**3 · Ses réponses sont calculées, pas réimprovisées.** Pose la même question à Claude à deux
+semaines d'intervalle et tu obtiens deux bonnes réponses qui ne sont pas tout à fait comparables.
+Ici les chiffres sortent de scripts : même entrée, même sortie, semaine après semaine, avec la
+comparaison d'une semaine sur l'autre qui rend une tendance visible. Et chaque sortie est vérifiée
+— l'agenda est contrôlé contre ce qu'il contient réellement, pas contre ce qu'on croit y avoir
+écrit.
+
+C'est tout. Tout ce qui suit découle de ces trois points.
+
+| | claude-coach + MCP Strava | + ce fork |
 |---|---|---|
 | Construit le plan | ✅ | l'utilise comme source de vérité |
-| Sait si tu as vraiment fait la séance | tu coches une case | **lu automatiquement depuis Strava** |
-| Sait si tu récupères | — | **sommeil, VFC, FC de repos depuis Garmin** |
-| Sait si tu progresses | — | **allure à FC constante, corrigée de la température** |
-| Sait si tes chaussures sont mortes | — | **jauge d'usure + la semaine où chaque paire lâche** |
-| Met la semaine à venir dans ton agenda | tu télécharges un `.ics` | **écrite et maintenue à jour, chaque semaine** |
-| Ajuste quand tu prends du retard | — | **le bilan du lundi s'en charge** |
+| Lit ce que tu as réellement couru | ✅ si tu demandes | **sans le demander, et réécrit dans le plan** |
+| Kilométrage des chaussures | ✅ via le matériel Strava | **+ seuil de remplacement et la semaine du plan où chaque paire lâche** |
+| Sommeil, VFC, FC de repos | — | **depuis les exports de données Garmin** |
+| Progrès indépendant de la météo | — | **allure à FC constante, corrigée de la température** |
+| Semaine à venir dans l'agenda | tu télécharges un `.ics` | **écrite depuis le plan et vérifiée, chaque semaine** |
+| Ajuster quand tu prends du retard | ✅ si tu demandes | **se fait tout seul, dans des limites fixes** |
 
-### Les cinq ajouts, simplement
+Deux précisions honnêtes sur ce tableau :
 
-**1 · Il lit ce que tu as réellement couru.** Chaque lundi il récupère ta semaine depuis Strava et
-la met à côté du plan. Volume, allure, et surtout la fréquence cardiaque sur les sorties faciles —
-l'erreur la plus fréquente et la plus coûteuse en endurance.
-
-**2 · Il voit ce que Strava ne peut pas voir.** Sommeil, variabilité cardiaque, FC de repos et pas
-viennent de tes exports de données Garmin, que Strava ne transporte pas. Ce sont les chiffres qui
-préviennent *avant* que tu casses, pas après.
-
-**3 · Il mesure le progrès, pas la météo.** La chaleur élève ta FC d'environ 0,65 bpm par °C. Sur
-une prépa qui va de l'été au printemps, ça suffit à te faire paraître 20 s/km plus rapide. Chaque
-fréquence cardiaque est corrigée de la température avant qu'on en conclue quoi que ce soit.
-
-**4 · Il écrit ta semaine dans ton agenda.** Pas un fichier à importer — de vrais événements, avec
-l'allure, le plafond de FC, le déroulé complet et le *pourquoi* de la séance. Les séances faites
-passent en gris et prennent un ✅.
-
-**5 · Il ajuste.** Du retard ? Il repart du niveau que tu as réellement tenu et décale le plan, au
-lieu de faire comme si tu avais fait les semaines manquantes. Récupération qui dérive ? Il allège
-la semaine plutôt que de maintenir la ligne.
+- **Strava expose un flux de température** (`get_activity_streams`, `temp`), donc la correction
+  thermique n'a pas strictement besoin de ce fork — mais le flux n'est renseigné que si ta montre a
+  le capteur, et beaucoup ne l'ont pas. Ce que le fork ajoute, c'est de le faire
+  *systématiquement*, avec une interrogation météo en repli. Sans correction, une prépa de l'été au
+  printemps paraît 20 s/km plus rapide par simple refroidissement.
+- **Strava expose le kilométrage du matériel**, donc « combien j'ai couru avec celles-ci ? » ne
+  demande aucun fork non plus. Ce qui est ajouté, c'est le seuil de remplacement et la projection —
+  *à quelle semaine du plan cette paire lâche-t-elle ?*
 
 ### À quoi ça ressemble
 

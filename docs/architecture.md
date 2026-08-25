@@ -133,7 +133,12 @@ else on the dashboard is context.
 **Temperature correction** — heat raises heart rate by roughly 0.65 bpm per °C above 15 °C. Across
 a summer-to-spring build, that alone improves "pace at 145 bpm" by about 20 s/km. An artefact read
 as progress. `meteo.py` fills it in automatically (Open-Meteo, city-level coordinates, no key, no
-identifier); watches don't record ambient temperature and Strava doesn't expose it.
+identifier).
+
+**Strava does expose temperature** — `get_activity_streams` accepts a `temp` stream. It is only
+populated if your watch has a sensor that records it, and many don't, in which case the stream
+comes back empty. `meteo.py` is the fallback for that case. If your watch does record it, prefer
+the Strava stream: it is the temperature at your wrist during the effort, not a weather station's.
 
 **Morning versus evening** — `moment_journee.py` separates the circadian effect from the
 temperature effect, and **refuses to conclude** below five runs per slot. In summer a morning run

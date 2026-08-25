@@ -27,47 +27,60 @@ claude-coach and stop reading here.** Its README is kept at
 
 ## What this fork adds, and why it matters
 
-claude-coach answers *what should I do?*
+### First, what you can already do without this fork
 
-This fork answers *what should I do now that week 3 didn't go to plan?*
+**Be clear about the baseline.** claude-coach plus Strava's official MCP connector already gets
+you a long way. The connector gives Claude read access to your activities, your heart rate per
+run, your zones, and your gear mileage — so you can simply *ask*:
 
-A plan is written once. A build lasts six months. In between, you sleep badly, it gets hot, you
-skip a week, your shoes die, and you run your easy runs too fast without noticing. **None of that
-is visible in a plan.** It is visible in your data — and nobody has the patience to
-cross-reference it every Monday.
+> *"Compare my last week to the plan. Was my easy run heart rate too high? How many kilometres are
+> on my shoes?"*
 
-So this fork does it for you, every Monday morning, without you launching anything.
+and get a good answer. **That is not this fork. That works today, out of the box.** If it covers
+what you need, you don't need anything here.
 
-| | claude-coach | + this fork |
+### What this fork actually changes
+
+Three things, and they're narrower than "it does more":
+
+**1 · It happens without you asking.** The comparison above only exists if you remember to ask for
+it, every week, for six months. The realistic failure mode of a training plan is not a bad
+algorithm — it's the fourth Monday when you don't open the laptop. This fork is a scheduled task
+plus the scripts it drives: the review writes itself, the calendar fills itself, the watch files
+are ready before you look for them.
+
+**2 · It uses data Strava does not have.** Sleep, heart-rate variability and resting heart rate
+come from Garmin's data exports. Strava carries none of it, and no connector will give it to you.
+These are the numbers that warn you *before* you break down, not after — and they're the reason
+the Monday review can say "lighten this week" with something behind it.
+
+**3 · Its answers are computed, not re-improvised.** Ask Claude the same question two weeks apart
+and you get two good answers that aren't quite comparable. Here the numbers come from scripts:
+same input, same output, week after week, with the week-on-week comparison that makes a trend
+visible. And every output is verified — the calendar is checked against what the calendar actually
+contains, not against what was believed to have been written.
+
+That's it. Everything below is a consequence of those three.
+
+| | claude-coach + Strava MCP | + this fork |
 |---|---|---|
 | Builds the plan | ✅ | uses it as the source of truth |
-| Knows if you actually did the session | you tick a box | **read from Strava automatically** |
-| Knows if you're recovering | — | **sleep, HRV, resting heart rate from Garmin** |
-| Knows if you're getting fitter | — | **pace at constant heart rate, corrected for temperature** |
-| Knows if your shoes are dead | — | **wear gauge + the week each pair runs out** |
-| Puts next week in your calendar | download a `.ics` | **written and kept in sync, every week** |
-| Adjusts when you fall behind | — | **the Monday review does it** |
+| Reads what you actually ran | ✅ if you ask | **unprompted, and written back into the plan** |
+| Shoe mileage | ✅ via Strava gear | **+ replacement threshold and the plan week each pair runs out** |
+| Sleep, HRV, resting heart rate | — | **from Garmin data exports** |
+| Progress independent of weather | — | **pace at constant HR, temperature-corrected** |
+| Next week in your calendar | download a `.ics` | **written from the plan and verified, every week** |
+| Adjusting when you fall behind | ✅ if you ask | **happens on its own, within fixed ramp limits** |
 
-### The five additions, plainly
+Two honest notes on that table:
 
-**1 · It reads what you actually ran.** Every Monday it pulls your week from Strava and puts it
-next to the plan. Volume, pace, and above all heart rate on easy runs — the most common and most
-expensive mistake in endurance training.
-
-**2 · It sees what Strava cannot.** Sleep, heart-rate variability, resting heart rate and steps
-come from your Garmin data exports, which Strava does not carry. These are the numbers that warn
-you *before* you break down, not after.
-
-**3 · It measures progress, not weather.** Heat raises your heart rate by roughly 0.65 bpm per °C.
-Across a build from summer to spring, that alone makes you look 20 s/km faster. Every heart rate
-is temperature-corrected before anything is concluded from it.
-
-**4 · It writes your week into your calendar.** Not a file to import — actual events, with pace,
-heart-rate ceiling, the full session and *why* it exists. Done sessions turn grey and get a ✅.
-
-**5 · It adjusts.** Fell behind? It resumes from what you actually held and shifts the plan
-instead of pretending you did the missing weeks. Recovery drifting? It lightens the week rather
-than holding the line.
+- **Strava exposes a temperature stream** (`get_activity_streams`, `temp`), so heat correction
+  doesn't strictly need this fork — but the stream is only populated if your watch has the sensor,
+  and many don't. What the fork adds is doing it *systematically*, with a weather lookup as
+  fallback. Uncorrected, a summer-to-spring build appears 20 s/km faster through cooling alone.
+- **Strava exposes gear mileage**, so "how far have I run in these?" needs no fork either. What's
+  added is the replacement threshold and the projection — *which week of the plan does this pair
+  run out?*
 
 ### What it looks like
 

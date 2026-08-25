@@ -4,9 +4,15 @@ Renseigne automatiquement la température de chaque séance.
 
 Pourquoi : la chaleur élève la FC à effort constant (~0,65 bpm/°C au-dessus de 15 °C).
 Sans correction, l'allure à 145 bpm s'améliorerait mécaniquement d'août à mars —
-un artefact saisonnier pris pour un progrès. Watches don't record
-la température, et la demander à chaque séance est une dépendance manuelle qui
-finirait par lâcher. On la récupère donc seule.
+un artefact saisonnier pris pour un progrès.
+
+Strava EXPOSE la température : get_activity_streams accepte un flux `temp`. Mais il
+n'est renseigné que si la montre a un capteur qui l'enregistre — beaucoup de modèles
+ne le font pas, et le flux revient alors vide. Ce script est le repli pour ce cas :
+il interroge un service météo à l'heure et au lieu de la séance.
+
+Si ta montre enregistre la température, préfère le flux Strava : c'est la
+température au poignet pendant l'effort, pas celle d'une station météo.
 
 Confidentialité : coordonnées arrondies au niveau de la ville (Paris, 48.85/2.35).
 Aucune donnée personnelle, aucun identifiant, aucune coordonnée de domicile n'est

@@ -138,8 +138,12 @@ jour. Tout le reste du tableau de bord est du contexte.
 **La correction thermique** — la chaleur élève la FC d'environ 0,65 bpm par °C au-dessus de 15 °C.
 Sur une prépa de l'été au printemps, ça suffit à améliorer « l'allure à 145 bpm » d'environ 20 s/km.
 Un artefact lu comme un progrès. `meteo.py` la renseigne automatiquement (Open-Meteo, coordonnées au
-niveau de la ville, sans clé, sans identifiant) ; les montres n'enregistrent pas la température
-ambiante et Strava ne l'expose pas.
+niveau de la ville, sans clé, sans identifiant).
+
+**Strava expose bien la température** — `get_activity_streams` accepte un flux `temp`. Il n'est
+renseigné que si la montre a un capteur qui l'enregistre, et beaucoup ne le font pas : le flux
+revient alors vide. `meteo.py` est le repli pour ce cas. Si ta montre l'enregistre, préfère le flux
+Strava : c'est la température à ton poignet pendant l'effort, pas celle d'une station météo.
 
 **Matin contre soir** — `moment_journee.py` sépare l'effet circadien de l'effet thermique, et
 **refuse de conclure** en dessous de cinq sorties par créneau. En été, une sortie du matin est aussi
