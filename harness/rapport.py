@@ -25,6 +25,8 @@ COURSE = date(2027, 3, 14)
 # ---------------------------------------------------------------------------
 # Données
 # ---------------------------------------------------------------------------
+_exiger(BASE / "build" / "plan.json", "Le plan",
+        "lancer ./harness/relancer.sh --plan 1")
 plan = json.loads((BASE / "build" / "plan.json").read_text(encoding="utf-8"))
 semaines_plan = {w["weekNumber"]: w for w in plan["weeks"]}
 

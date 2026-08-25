@@ -164,6 +164,35 @@ ce qui a été encodé, dont six échouent sur l'exporteur non corrigé. La suit
 
 ---
 
+## Récupérer le projet
+
+```bash
+git clone https://github.com/NicolasPateron/monday-coach.git
+cd monday-coach
+npm install
+./harness/init.sh
+```
+
+Ou [télécharger le ZIP](https://github.com/NicolasPateron/monday-coach/archive/refs/heads/main.zip)
+si tu préfères te passer de git.
+
+`init.sh` crée les fichiers de travail dont l'outillage a besoin — aucun n'est versionné, parce
+qu'ils contiennent des données personnelles. Il est rejouable sans rien écraser. Ensuite tu édites
+`harness/athlete.json` (ta course, ton objectif, ton seuil mesuré) et tu suis le montage ci-dessous.
+
+**Tu utilises déjà claude-coach et tu ne veux que les correctifs FIT ?** Deux fichiers et un test :
+
+```bash
+git remote add monday https://github.com/NicolasPateron/monday-coach.git
+git fetch monday
+git checkout monday/main -- src/viewer/lib/export/fit.ts src/viewer/stores/plan.ts tests/viewer/export-fit.test.ts
+npm test
+```
+
+Rien d'autre dans ce fork n'est nécessaire pour qu'ils fonctionnent.
+
+---
+
 ## Montage
 
 Environ 90 minutes, une seule fois. Les étapes 3 et 4 sont celles de claude-coach ; le reste câble
@@ -187,7 +216,8 @@ la boucle autour.
 > branché »*.
 
 **Prérequis :** un abonnement Claude payant (Pro ou au-dessus), un abonnement Strava (le connecteur
-est réservé aux abonnés), Python 3. La montre Garmin est facultative — sans elle tu perds les
+est réservé aux abonnés), Python 3.9+, et Node 18+ pour le viewer et l'export FIT. La montre Garmin
+est facultative — sans elle tu perds les
 courbes de récupération et les séances guidées, et tu gardes tout le reste.
 
 ---
@@ -209,8 +239,12 @@ planifiée ne tourne pas.
 
 ## Sous le capot
 
-Douze scripts Python dans [`harness/`](../../harness/), sans dépendances, une commande :
+Douze scripts Python dans [`harness/`](../../harness/), environ 3 000 lignes, une commande :
 `./harness/relancer.sh`.
+
+**Aucun paquet Python tiers** — la bibliothèque standard seule. Deux choses sortent tout de même du
+cadre : le décodage des `.fit` Garmin passe par Node et `@garmin/fitsdk`, dont claude-coach dépend
+déjà, et `meteo.py` interroge Open-Meteo en HTTP simple (sans clé, sans compte).
 
 Ce qui vaut la peine d'être connu est dans **[architecture.fr.md](architecture.fr.md)** :
 

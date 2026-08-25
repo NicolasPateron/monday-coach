@@ -10,6 +10,7 @@ Rien n'a été conçu à l'avance.
 ## Une commande, un seul ordre valide
 
 ```bash
+./harness/init.sh                # une fois, après le clone
 ./harness/relancer.sh            # rafraîchissement hebdomadaire
 ./harness/relancer.sh --plan 2   # après un changement de plan, pour la semaine 2
 ```

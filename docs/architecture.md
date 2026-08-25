@@ -8,6 +8,7 @@ designed up front.
 ## One command, one valid order
 
 ```bash
+./harness/init.sh                # once, after cloning
 ./harness/relancer.sh            # weekly refresh
 ./harness/relancer.sh --plan 2   # after a plan change, for week 2
 ```

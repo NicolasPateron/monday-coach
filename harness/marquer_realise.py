@@ -15,6 +15,16 @@ Usage : python3 harness/marquer_realise.py
 import json, glob
 from pathlib import Path
 
+def _exiger(chemin, quoi, remede):
+    """A missing file must produce a sentence, not a Python traceback.
+    This is often the first thing a new user sees."""
+    import sys
+    if not Path(chemin).exists():
+        sys.exit(f"\n  ✗ {quoi} not found.\n"
+                 f"    Expected at: {chemin}\n"
+                 f"    → {remede}\n")
+
+
 BASE = Path(__file__).parent.parent
 PLAN = BASE / "build" / "plan.json"
 
@@ -33,6 +43,8 @@ for f in sorted(glob.glob(str(BASE / "suivi" / "semaine-*-strava.json"))):
         fam = famille(a.get("type"))
         if fam and a.get("date"):
             reel.setdefault((a["date"], fam), []).append(a)
+
+_exiger(PLAN, "The training plan", "run ./harness/relancer.sh --plan 1")
 
 plan = json.loads(PLAN.read_text(encoding="utf-8"))
 faites = rendues = 0

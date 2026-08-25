@@ -18,6 +18,16 @@ Usage :
 import csv, json, sys
 from datetime import date, timedelta
 from pathlib import Path
+
+def _exiger(chemin, quoi, remede):
+    """A missing file must produce a sentence, not a Python traceback.
+    This is often the first thing a new user sees."""
+    import sys
+    if not Path(chemin).exists():
+        sys.exit(f"\n  ✗ {quoi} not found.\n"
+                 f"    Expected at: {chemin}\n"
+                 f"    → {remede}\n")
+
 from statistics import mean
 
 BASE = Path(__file__).parent.parent
@@ -58,6 +68,7 @@ def lundi_de(semaine: int) -> date:
 def charge_plan(semaine):
     if not PLAN.exists():
         return None
+    _exiger(PLAN, "The training plan", "run ./harness/relancer.sh --plan 1")
     plan = json.loads(PLAN.read_text(encoding="utf-8"))
     w = next((x for x in plan["weeks"] if x["weekNumber"] == semaine), None)
     if not w:

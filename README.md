@@ -157,6 +157,35 @@ all passing.
 
 ---
 
+## Get it
+
+```bash
+git clone https://github.com/NicolasPateron/monday-coach.git
+cd monday-coach
+npm install
+./harness/init.sh
+```
+
+Or [download the ZIP](https://github.com/NicolasPateron/monday-coach/archive/refs/heads/main.zip)
+if you'd rather not use git.
+
+`init.sh` creates the working files the harness needs — none are committed, because they hold
+personal data. It's safe to re-run and overwrites nothing. Then edit `harness/athlete.json`
+(your race, your target, your measured threshold) and follow the setup below.
+
+**Already using claude-coach and only want the FIT fixes?** They're two files and a test:
+
+```bash
+git remote add monday https://github.com/NicolasPateron/monday-coach.git
+git fetch monday
+git checkout monday/main -- src/viewer/lib/export/fit.ts src/viewer/stores/plan.ts tests/viewer/export-fit.test.ts
+npm test
+```
+
+Nothing else in this fork is required for those to work.
+
+---
+
 ## Setup
 
 About 90 minutes, once. Steps 3 and 4 are claude-coach's; the rest wires the loop around it.
@@ -164,7 +193,7 @@ About 90 minutes, once. Steps 3 and 4 are claude-coach's; the rest wires the loo
 | | | |
 |---|---|---|
 | **0** | **Request your Garmin data export** at garmin.com → Data Management. Up to 48 h, so start it now and carry on. | 2 min |
-| **1** | Install [Claude Code](https://claude.ai/download), open the **Code** tab, create a folder, pick **Opus**. | 10 min |
+| **1** | Install [Claude Code](https://claude.ai/download), open the **Code** tab, point it at your clone, pick **Opus**. | 10 min |
 | **2** | Connect Strava: **Customize → Connectors →** `https://mcp.strava.com/mcp`. Read-only. | 5 min |
 | **3** | Install the coach skill — [prompt](docs/prompts/setup.md#1--install-the-coach-skill). | 5 min |
 | **4** | **Let the skill build your plan.** claude-coach doing its job: the interview, the zones, the plan, the viewer. | 30 min |
@@ -178,7 +207,8 @@ About 90 minutes, once. Steps 3 and 4 are claude-coach's; the rest wires the loo
 > don't need it. If the skill asks, reply *"use the Strava connector already connected"*.
 
 **Requirements:** a paid Claude plan (Pro or above), a Strava subscription (the connector is
-subscriber-only), Python 3. A Garmin watch is optional — without it you lose the recovery curves
+subscriber-only), Python 3.9+, and Node 18+ for the viewer and the FIT export. A Garmin watch is
+optional — without it you lose the recovery curves
 and the guided workouts, and keep everything else.
 
 ---
@@ -200,8 +230,12 @@ scheduled task isn't running.
 
 ## Under the hood
 
-Twelve Python scripts in [`harness/`](harness/), no dependencies, one command:
+Twelve Python scripts in [`harness/`](harness/), about 3 000 lines, one command:
 `./harness/relancer.sh`.
+
+**No third-party Python packages** — the standard library only. Two things do reach outside it:
+decoding Garmin `.fit` files shells out to Node using `@garmin/fitsdk`, which claude-coach already
+depends on, and `meteo.py` calls Open-Meteo over plain HTTP (no key, no account).
 
 The parts worth knowing about are in **[docs/architecture.md](docs/architecture.md)**:
 

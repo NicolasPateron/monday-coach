@@ -20,10 +20,22 @@ Code de sortie : 0 si tout passe, 1 s'il reste une anomalie bloquante.
 
 import json, sys
 from pathlib import Path
+
+def _exiger(chemin, quoi, remede):
+    """A missing file must produce a sentence, not a Python traceback.
+    This is often the first thing a new user sees."""
+    import sys
+    if not Path(chemin).exists():
+        sys.exit(f"\n  ✗ {quoi} not found.\n"
+                 f"    Expected at: {chemin}\n"
+                 f"    → {remede}\n")
+
 from statistics import mean, median, pstdev
 
 BASE = Path(__file__).parent.parent
 SERIE = BASE / "garmin-export" / "wellness-daily.json"
+
+_exiger(SERIE, "Garmin wellness data", "run ./harness/init.sh, then import a Garmin export (README → Setup, step 5)")
 
 d = json.loads(SERIE.read_text(encoding="utf-8"))
 anomalies, avertissements = [], []
