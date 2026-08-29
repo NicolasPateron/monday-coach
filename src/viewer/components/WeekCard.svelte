@@ -34,17 +34,14 @@
 
   const phaseName = $derived((week.phase ?? "base").toLowerCase());
 
-  // Volume hebdomadaire en distance. La donnée existe déjà dans le plan mais
+  // Volume de COURSE de la semaine. La donnée existe déjà dans le plan mais
   // n'était pas affichée : pour un coureur, les kilomètres sont le repère de
   // charge — une durée ne dit pas si la semaine est dure.
-  const weekKm = $derived(
-    Math.round(
-      Object.values(week.summary?.bySport ?? {}).reduce(
-        (total, sport: any) => total + (sport?.km ?? 0),
-        0
-      )
-    )
-  );
+  //
+  // On ne somme volontairement PAS les sports : 40 km à vélo ne valent pas
+  // 40 km à pied, et les additionner produirait un nombre qui ne veut rien dire.
+  // Sur un plan triathlon, la distance à pied reste le repère le plus lisible.
+  const weekKm = $derived(Math.round((week.summary?.bySport as any)?.run?.km ?? 0));
 
   function handleDragOver(e: DragEvent, date: string) {
     e.preventDefault();

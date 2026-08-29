@@ -141,6 +141,8 @@ with no name:
 **One improvement to the viewer** — each week's header showed hours only. The plan already
 carries the distance per sport; the header now shows both (`28 km · 3.6 hrs`). For a runner,
 kilometres are the load reference — a duration doesn't tell you whether the week is hard.
+Only running distance is counted: 40 km on a bike is not 40 km on foot, and adding them
+would produce a number that means nothing.
 
 **One in the viewer** — `loadCompleted()` read only `localStorage` and overwrote the plan's own
 `completed` field, so a run you had actually done never showed as done. Now the plan wins, and it

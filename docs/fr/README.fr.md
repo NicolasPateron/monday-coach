@@ -148,6 +148,8 @@ affichait sans nom :
 **Une amélioration du viewer** — l'en-tête de chaque semaine n'affichait que les heures. Le plan
 porte déjà la distance par sport ; l'en-tête montre désormais les deux (`28 km · 3,6 hrs`). Pour un
 coureur, les kilomètres sont le repère de charge — une durée ne dit pas si la semaine est dure.
+Seule la distance de course est comptée : 40 km à vélo ne valent pas 40 km à pied, et les
+additionner produirait un nombre qui ne veut rien dire.
 
 **Un dans le viewer** — `loadCompleted()` ne lisait que le `localStorage` et écrasait le champ
 `completed` du plan : une sortie réellement courue n'apparaissait jamais faite. Le plan fait
