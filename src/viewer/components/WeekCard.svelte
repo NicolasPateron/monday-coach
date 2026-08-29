@@ -34,6 +34,18 @@
 
   const phaseName = $derived((week.phase ?? "base").toLowerCase());
 
+  // Volume hebdomadaire en distance. La donnée existe déjà dans le plan mais
+  // n'était pas affichée : pour un coureur, les kilomètres sont le repère de
+  // charge — une durée ne dit pas si la semaine est dure.
+  const weekKm = $derived(
+    Math.round(
+      Object.values(week.summary?.bySport ?? {}).reduce(
+        (total, sport: any) => total + (sport?.km ?? 0),
+        0
+      )
+    )
+  );
+
   function handleDragOver(e: DragEvent, date: string) {
     e.preventDefault();
     dragOverDate = date;
@@ -60,7 +72,12 @@
       <span class="week-phase {phaseName}">{week.phase ?? "Base"}</span>
       <span class="week-focus">{week.focus ?? ""}</span>
     </div>
-    <div class="week-hours"><span>{week.targetHours ?? 0}</span> hrs</div>
+    <div class="week-totals">
+      {#if weekKm > 0}
+        <span class="week-km"><span>{weekKm}</span> km</span>
+      {/if}
+      <span class="week-hours"><span>{week.targetHours ?? 0}</span> hrs</span>
+    </div>
   </div>
 
   <div class="days-grid">
@@ -182,13 +199,22 @@
     color: var(--text-muted);
   }
 
-  .week-hours {
+  .week-totals {
+    display: flex;
+    align-items: baseline;
+    gap: 0.85rem;
+    white-space: nowrap;
+  }
+
+  .week-hours,
+  .week-km {
     font-family: "JetBrains Mono", monospace;
     font-size: 0.9rem;
     color: var(--text-secondary);
   }
 
-  .week-hours span {
+  .week-hours span,
+  .week-km span {
     color: var(--text-primary);
     font-weight: 500;
   }

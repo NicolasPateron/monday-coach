@@ -145,6 +145,10 @@ affichait sans nom :
 | Pas de répétition placé _avant_ ses enfants        | Va _après_ : `durationValue` = index du 1er enfant, `targetValue` = nombre de répétitions |
 | FC écrite en bpm bruts                             | FIT lit 1–100 comme un % de FC max : 145 bpm devenait « 145 % de la max ». Converti       |
 
+**Une amélioration du viewer** — l'en-tête de chaque semaine n'affichait que les heures. Le plan
+porte déjà la distance par sport ; l'en-tête montre désormais les deux (`28 km · 3,6 hrs`). Pour un
+coureur, les kilomètres sont le repère de charge — une durée ne dit pas si la semaine est dure.
+
 **Un dans le viewer** — `loadCompleted()` ne lisait que le `localStorage` et écrasait le champ
 `completed` du plan : une sortie réellement courue n'apparaissait jamais faite. Le plan fait
 désormais autorité, et ça ne casse plus en origine opaque (`file://`, iframe `srcdoc`).

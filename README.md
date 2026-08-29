@@ -138,6 +138,10 @@ with no name:
 | Repeat step placed _before_ its children           | Goes _after_: `durationValue` = first child index, `targetValue` = repeat count |
 | Heart rate written as raw bpm                      | FIT reads 1–100 as % of max, so 145 bpm became "145 % of max". Converted        |
 
+**One improvement to the viewer** — each week's header showed hours only. The plan already
+carries the distance per sport; the header now shows both (`28 km · 3.6 hrs`). For a runner,
+kilometres are the load reference — a duration doesn't tell you whether the week is hard.
+
 **One in the viewer** — `loadCompleted()` read only `localStorage` and overwrote the plan's own
 `completed` field, so a run you had actually done never showed as done. Now the plan wins, and it
 no longer breaks in an opaque origin (`file://`, `srcdoc` iframe).
