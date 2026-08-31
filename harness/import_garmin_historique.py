@@ -155,7 +155,7 @@ PERF.write_text(json.dumps({"vo2max": vo2, "predictions": pred, "charge": charge
 CHAUSSURES = BASE / "garmin-export" / "chaussures.json"
 gear_files = glob.glob(str(RACINE / "**" / "*_gear.json"), recursive=True)
 if CHAUSSURES.exists():
-    # Ce fichier est édité à la main (you reassign runs in Garmin, et
+    # Ce fichier est édité à la main (l'athlète réattribue ses sorties dans Garmin, et
     # l'export RGPD est figé à sa date). L'écraser ferait perdre les corrections.
     print(f"  chaussures.json existe déjà — conservé (édition manuelle)")
     gear_files = []

@@ -4,7 +4,7 @@ Contrôle de fiabilité des extractions — à lancer après toute ingestion de 
 
 Motivation : trois conclusions fausses ont été tirées de données mal extraites
 (sommeil sous-estimé de 4 h, FC de repos lue sur un champ de référence figé). Ces
-erreurs n'ont été vues que parce que the athlete compared them to his own app. Ce script
+erreurs n'ont été vues que parce que l'athlète a comparé les chiffres à son application. Ce script
 remplace cette vérification manuelle.
 
 Trois familles de tests :

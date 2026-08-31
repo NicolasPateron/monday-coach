@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """FC le matin contre FC le soir, à effort égal.
 
-Question posée par the athlete le 23/08/2026 : « en courant le matin, ma FC est plus
+Question posée par l'athlète le 23/08/2026 : « en courant le matin, ma FC est plus
 basse qu'en courant le soir, à effort identique. Possible ou simple impression ? »
 
 Le piège est immédiat : en été, courir le matin c'est courir 10 °C plus frais, et
